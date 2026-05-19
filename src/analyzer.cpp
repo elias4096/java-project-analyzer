@@ -1,7 +1,8 @@
 #include "analyzer.h"
 
-#include <fstream>
+#include <iostream>
 #include <filesystem>
+#include <fstream>
 #include <string>
 
 Analyzer::Analyzer(const AnalyzerConfig &config)
@@ -11,10 +12,60 @@ Analyzer::Analyzer(const AnalyzerConfig &config)
 
 uint32_t Analyzer::getLinesOfCode()
 {
-    uint32_t result = 0;
-    std::filesystem::recursive_directory_iterator it(m_Config.root_path);
+    return processJavaFiles([](std::ifstream &file)
+                            {
+        uint32_t count = 0;
+        std::string line = {};
+        bool inBlockComment = false;
 
-    for (const auto &entry : it)
+        while (std::getline(file, line))
+        {
+            line.erase(0, line.find_first_not_of(" \t\r\n"));
+
+            if (line.empty())
+                continue;
+
+            if (inBlockComment)
+            {
+                if (line.find("*/") != std::string::npos)
+                    inBlockComment = false;
+                continue;
+            }
+
+            if (line.rfind("/*", 0) == 0)
+            {
+                inBlockComment = true;
+                continue;
+            }
+
+            if (line.rfind("//", 0) == 0)
+                continue;
+
+            count++;
+        }
+
+        return count; });
+}
+
+uint32_t Analyzer::getTotalLinesOfCode()
+{
+    return processJavaFiles([](std::ifstream &file)
+                            {
+        uint32_t count = 0;
+        std::string line = {};
+        while (std::getline(file, line))
+            count++;
+
+        return count; });
+}
+
+template <typename Func>
+uint32_t Analyzer::processJavaFiles(Func fn)
+{
+    uint32_t result = 0;
+
+    for (const auto &entry :
+         std::filesystem::recursive_directory_iterator(m_Config.root_path))
     {
         if (!entry.is_regular_file())
             continue;
@@ -25,13 +76,11 @@ uint32_t Analyzer::getLinesOfCode()
         std::ifstream file(entry.path());
         if (!file)
         {
-            return false;
+            std::cerr << "Warning: could not open " << entry.path() << std::endl;
+            continue;
         }
 
-        std::string line;
-
-        while (std::getline(file, line))
-            result++;
+        result += fn(file);
     }
 
     return result;

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        std::cerr << "[ERROR] Invalid arguments" << std::endl;
+        std::cerr << "Error: invalid arguments" << std::endl;
         return 1;
     }
 
@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
 
     Analyzer analyzer(analyzerConfig);
 
-    std::cout << analyzer.getLinesOfCode() << " total lines of java code found." << std::endl;
+    std::cout << analyzer.getLinesOfCode() << " lines of java code found." << std::endl;
+    std::cout << analyzer.getTotalLinesOfCode() << " total lines of java code found." << std::endl;
 
     return 0;
 }
