@@ -1,12 +1,13 @@
 # Java Project Analyzer
 
-Multithreaded C++ tool for analyzing Java projects, built for learning purposes. Processes files in parallel and generates useful code statistics.
+Multithreaded C++ CLI tool for analyzing Java projects, built for learning purposes. Processes files in parallel and generates useful code statistics.
 
 # Features
 
-- Feature 1 todo
-- Feature 2 todo
-- Feature 3 todo...
+- Efficient multithreaded file processing (TODO)
+- Total and effective (code) line counting
+- Detection of classes and methods (TODO)
+- Project-wide word search (TODO)
 
 # Getting Started
 
@@ -27,9 +28,9 @@ cd build
 cmake -G "MinGW Makefiles" ..
 mingw32-make
 
-# App
-./JavaProjectAnalyzer.exe
+# Run app
+JavaProjectAnalyzer.exe
 
-# Tests
-./Tests.exe
+# Run tests
+Tests.exe
 ```
