@@ -1,7 +1,4 @@
 #include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <string>
 
 #include "analyzer.h"
 

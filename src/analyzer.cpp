@@ -1,9 +1,12 @@
 #include "analyzer.h"
 
-#include <iostream>
+#include <atomic>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
+
+#include "thread_pool.h"
 
 Analyzer::Analyzer(const AnalyzerConfig &config)
 {
@@ -12,8 +15,7 @@ Analyzer::Analyzer(const AnalyzerConfig &config)
 
 uint32_t Analyzer::getLinesOfCode()
 {
-    return processJavaFiles([](std::ifstream &file)
-                            {
+    return processJavaFiles([](std::ifstream &file) {
         uint32_t count = 0;
         std::string line = {};
         bool inBlockComment = false;
@@ -44,43 +46,48 @@ uint32_t Analyzer::getLinesOfCode()
             count++;
         }
 
-        return count; });
+        return count;
+    });
 }
 
 uint32_t Analyzer::getTotalLinesOfCode()
 {
-    return processJavaFiles([](std::ifstream &file)
-                            {
+    return processJavaFiles([](std::ifstream &file) {
         uint32_t count = 0;
         std::string line = {};
         while (std::getline(file, line))
             count++;
 
-        return count; });
+        return count;
+    });
 }
 
-template <typename Func>
-uint32_t Analyzer::processJavaFiles(Func fn)
+template <typename Function> uint32_t Analyzer::processJavaFiles(Function fn)
 {
-    uint32_t result = 0;
+    std::atomic<uint32_t> result = 0;
 
-    for (const auto &entry :
-         std::filesystem::recursive_directory_iterator(m_Config.root_path))
     {
-        if (!entry.is_regular_file())
-            continue;
+        ThreadPool pool(m_Config.thread_count);
 
-        if (entry.path().extension() != ".java")
-            continue;
-
-        std::ifstream file(entry.path());
-        if (!file)
+        for (const auto &entry : std::filesystem::recursive_directory_iterator(m_Config.root_path))
         {
-            std::cerr << "Warning: could not open " << entry.path() << std::endl;
-            continue;
-        }
+            if (!entry.is_regular_file())
+                continue;
 
-        result += fn(file);
+            if (entry.path().extension() != ".java")
+                continue;
+
+            pool.enqueue([path = entry.path(), &result, fn] {
+                std::ifstream file(path);
+                if (!file)
+                {
+                    std::cerr << "Warning: could not open " << path << std::endl;
+                    return;
+                }
+
+                result += fn(file);
+            });
+        }
     }
 
     return result;

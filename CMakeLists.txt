@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # ---- Core library ----
 add_library(core
+    src/thread_pool.cpp
     src/analyzer.cpp
 )
 
