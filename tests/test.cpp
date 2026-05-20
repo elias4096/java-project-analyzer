@@ -31,6 +31,6 @@ TEST(AnalyzerTest, MixedFilesCountsCorrectly)
 
     Analyzer analyzer(analyzerConfig);
 
-    EXPECT_EQ(analyzer.getLinesOfCode(), 11);
-    EXPECT_EQ(analyzer.getTotalLinesOfCode(), 22);
+    EXPECT_EQ(analyzer.getLinesOfCode(), 12);
+    EXPECT_EQ(analyzer.getTotalLinesOfCode(), 23);
 }

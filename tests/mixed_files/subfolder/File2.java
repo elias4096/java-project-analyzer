@@ -10,6 +10,7 @@ public class File2 {
      * volutpat, elit non rhoncus ornare, tortor augue tempus erat, nec aliquam
      * magna est fermentum libero.
      */
+    @SuppressWarnings("unused")
     private int add(int a, int b) {
         return a + b;
     }
