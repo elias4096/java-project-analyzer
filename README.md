@@ -1,11 +1,11 @@
 # Java Project Analyzer
 
-Multithreaded C++ CLI tool for analyzing Java projects, built for learning purposes. Processes files in parallel and generates useful code statistics.
+Multithreaded C++ CLI tool for analyzing Java projects, built for learning purposes. Processes files in parallel and generates fun code statistics.
 
 # Features
 
 - Efficient multithreaded file processing
-- Get number of line of code, classes and methods
+- Get number of lines-of-code, classes and methods
 - Project-wide word search (TODO)
 
 # Getting Started
