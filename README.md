@@ -4,7 +4,7 @@ Multithreaded C++ CLI tool for analyzing Java projects, built for learning purpo
 
 # Features
 
-- Efficient multithreaded file processing (TODO)
+- Efficient multithreaded file processing
 - Total and effective (code) line counting
 - Detection of classes and methods (TODO)
 - Project-wide word search (TODO)
@@ -13,10 +13,10 @@ Multithreaded C++ CLI tool for analyzing Java projects, built for learning purpo
 
 ## Prerequisites
 
-- CMake
+- CMake (at least 3.16)
 - C++ Compiler (at least C++17)
 
-## Installing (Windows 11 + MinGW)
+## Installing (Windows Command Prompt + MinGW)
 
 ```
 git clone --recursive https://github.com/elias4096/java-project-analyzer.git
