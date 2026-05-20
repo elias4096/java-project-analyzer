@@ -13,24 +13,30 @@ Analyzer::Analyzer(const AnalyzerConfig &config)
     m_Config = config;
 }
 
-uint32_t Analyzer::getLinesOfCode()
+AnalyzerResult Analyzer::analyze()
 {
     return processJavaFiles([](std::ifstream &file) {
-        uint32_t count = 0;
+        AnalyzerResult result = {};
+        result.javaFilesCount++;
+
         std::string line = {};
         bool inBlockComment = false;
 
         while (std::getline(file, line))
         {
+            result.totalLinesOfCode++;
+
             line.erase(0, line.find_first_not_of(" \t\r\n"));
 
             if (line.empty())
                 continue;
 
+            // handle block comments
             if (inBlockComment)
             {
                 if (line.find("*/") != std::string::npos)
                     inBlockComment = false;
+
                 continue;
             }
 
@@ -40,36 +46,33 @@ uint32_t Analyzer::getLinesOfCode()
                 continue;
             }
 
+            // single line comment
             if (line.rfind("//", 0) == 0)
                 continue;
 
-            count++;
+            result.linesOfCode++;
+
+            if (line.find("class ") != std::string::npos)
+                result.javaClassesCount++;
+
+            if (line.find("(") != std::string::npos && line.find(")") != std::string::npos &&
+                line.find("{") != std::string::npos)
+                result.javaMethodsCount++;
         }
 
-        return count;
+        return result;
     });
 }
 
-uint32_t Analyzer::getTotalLinesOfCode()
+template <typename Function> AnalyzerResult Analyzer::processJavaFiles(Function fn)
 {
-    return processJavaFiles([](std::ifstream &file) {
-        uint32_t count = 0;
-        std::string line = {};
-        while (std::getline(file, line))
-            count++;
-
-        return count;
-    });
-}
-
-template <typename Function> uint32_t Analyzer::processJavaFiles(Function fn)
-{
-    std::atomic<uint32_t> result = 0;
+    AnalyzerResult result = {};
+    std::mutex resultMutex;
 
     {
-        ThreadPool pool(m_Config.thread_count);
+        ThreadPool pool(m_Config.threadCount);
 
-        for (const auto &entry : std::filesystem::recursive_directory_iterator(m_Config.root_path))
+        for (const auto &entry : std::filesystem::recursive_directory_iterator(m_Config.projectPath))
         {
             if (!entry.is_regular_file())
                 continue;
@@ -77,7 +80,7 @@ template <typename Function> uint32_t Analyzer::processJavaFiles(Function fn)
             if (entry.path().extension() != ".java")
                 continue;
 
-            pool.enqueue([path = entry.path(), &result, fn] {
+            pool.enqueue([path = entry.path(), &result, &resultMutex, fn] {
                 std::ifstream file(path);
                 if (!file)
                 {
@@ -85,7 +88,9 @@ template <typename Function> uint32_t Analyzer::processJavaFiles(Function fn)
                     return;
                 }
 
-                result += fn(file);
+                AnalyzerResult local = fn(file);
+                std::lock_guard<std::mutex> lock(resultMutex);
+                result += local;
             });
         }
     }

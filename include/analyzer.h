@@ -5,8 +5,27 @@
 
 struct AnalyzerConfig
 {
-    std::string root_path;
-    size_t thread_count = 4;
+    std::string projectPath;
+    size_t threadCount = 4;
+};
+
+struct AnalyzerResult
+{
+    uint32_t linesOfCode = {};
+    uint32_t totalLinesOfCode = {};
+    uint32_t javaFilesCount = {};
+    uint32_t javaClassesCount = {};
+    uint32_t javaMethodsCount = {};
+
+    AnalyzerResult &operator+=(const AnalyzerResult &other)
+    {
+        linesOfCode += other.linesOfCode;
+        totalLinesOfCode += other.totalLinesOfCode;
+        javaFilesCount += other.javaFilesCount;
+        javaClassesCount += other.javaClassesCount;
+        javaMethodsCount += other.javaMethodsCount;
+        return *this;
+    }
 };
 
 class Analyzer
@@ -14,14 +33,10 @@ class Analyzer
   public:
     explicit Analyzer(const AnalyzerConfig &config);
 
-    // Ignores comments or empty lines.
-    uint32_t getLinesOfCode();
-
-    // Ignores nothing, every single line counts.
-    uint32_t getTotalLinesOfCode();
+    AnalyzerResult analyze();
 
   private:
     AnalyzerConfig m_Config = {};
 
-    template <typename Func> uint32_t processJavaFiles(Func fn);
+    template <typename Function> AnalyzerResult processJavaFiles(Function fn);
 };
