@@ -1,13 +1,36 @@
 #include <gtest/gtest.h>
 
-// Just some temporarily code to check if googletest works.
+#include "analyzer.h"
 
-int add(int a, int b)
+TEST(AnalyzerTest, EmptyDirectoryReturnsZero)
 {
-    return a + b;
+    AnalyzerConfig analyzerConfig = {};
+    analyzerConfig.root_path = "../tests/no_files";
+
+    Analyzer analyzer(analyzerConfig);
+
+    EXPECT_EQ(analyzer.getLinesOfCode(), 0);
+    EXPECT_EQ(analyzer.getTotalLinesOfCode(), 0);
 }
 
-TEST(MathTest, Basic)
+TEST(AnalyzerTest, SingleFileCountsCorrectly)
 {
-    EXPECT_EQ(add(2, 3), 5);
+    AnalyzerConfig analyzerConfig = {};
+    analyzerConfig.root_path = "../tests/single_file";
+
+    Analyzer analyzer(analyzerConfig);
+
+    EXPECT_EQ(analyzer.getLinesOfCode(), 5);
+    EXPECT_EQ(analyzer.getTotalLinesOfCode(), 11);
+}
+
+TEST(AnalyzerTest, MixedFilesCountsCorrectly)
+{
+    AnalyzerConfig analyzerConfig = {};
+    analyzerConfig.root_path = "../tests/mixed_files";
+
+    Analyzer analyzer(analyzerConfig);
+
+    EXPECT_EQ(analyzer.getLinesOfCode(), 11);
+    EXPECT_EQ(analyzer.getTotalLinesOfCode(), 22);
 }
