@@ -14,4 +14,16 @@ public class File2 {
     private int add(int a, int b) {
         return a + b;
     }
+
+    @SuppressWarnings("unused")
+    private int subtract(int a, int b) {
+        return a - b;
+    }
+
+    /*
+     * @SuppressWarnings("unused")
+     * private int divide(int a, int b) {
+     * return a / b;
+     * }
+     */
 }

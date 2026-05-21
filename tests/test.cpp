@@ -32,17 +32,19 @@ TEST(AnalyzerTest, SingleFileCountsCorrectly)
     EXPECT_EQ(analyzerResult.javaMethodsCount, 1);
 }
 
-TEST(AnalyzerTest, MixedFilesCountsCorrectly)
+TEST(AnalyzerTest, MixedFilesSearchCorrectly)
 {
     AnalyzerConfig analyzerConfig = {};
     analyzerConfig.projectPath = "../tests/mixed_files";
+    analyzerConfig.search = "public";
 
     Analyzer analyzer(analyzerConfig);
     AnalyzerResult analyzerResult = analyzer.analyze();
 
-    EXPECT_EQ(analyzerResult.linesOfCode, 12);
-    EXPECT_EQ(analyzerResult.totalLinesOfCode, 23);
+    EXPECT_EQ(analyzerResult.linesOfCode, 16);
+    EXPECT_EQ(analyzerResult.totalLinesOfCode, 35);
     EXPECT_EQ(analyzerResult.javaFilesCount, 2);
     EXPECT_EQ(analyzerResult.javaClassesCount, 2);
-    EXPECT_EQ(analyzerResult.javaMethodsCount, 2);
+    EXPECT_EQ(analyzerResult.javaMethodsCount, 3);
+    EXPECT_EQ(analyzerResult.searchResults.size(), 2);
 }
