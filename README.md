@@ -31,7 +31,7 @@ mingw32-make
 analyzer.exe
 
 # Run tests
-Tests.exe
+tests.exe
 ```
 
 ## Usage
