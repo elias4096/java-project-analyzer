@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     std::string search = {};
 
-    std::filesystem::path path = std::filesystem::path(argv[0]).parent_path();
+    std::filesystem::path path = std::filesystem::canonical(argv[0]).parent_path();
 
     for (int i = 1; i < argc; i++)
     {
