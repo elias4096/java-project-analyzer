@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 
@@ -5,26 +6,58 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    std::string search = {};
+
+    std::filesystem::path path = std::filesystem::path(argv[0]).parent_path();
+
+    for (int i = 1; i < argc; i++)
     {
-        std::cerr << "Error: invalid arguments" << std::endl;
-        return 1;
+        std::string arg = argv[i];
+
+        if (arg == "--path" && i + 1 < argc)
+        {
+            path = std::filesystem::path(argv[++i]);
+        }
+        else if (arg == "--search" && i + 1 < argc)
+        {
+            search = argv[++i];
+        }
+        else
+        {
+            std::cerr << "Error: invalid arguments\n";
+            return EXIT_FAILURE;
+        }
     }
 
     AnalyzerConfig analyzerConfig = {};
-    analyzerConfig.projectPath = argv[1];
     analyzerConfig.threadCount = 4;
+    analyzerConfig.projectPath = path;
+    analyzerConfig.search = search;
 
     Analyzer analyzer(analyzerConfig);
+
     AnalyzerResult analyzerResult = analyzer.analyze();
-
-    std::cout << "\n<=== Java Project Analysis ===>\n\n";
+    std::cout << "<=== Java Project Analysis ===>" << std::endl << std::endl;
     std::cout << std::left;
-    std::cout << std::setw(20) << "Total java files:" << analyzerResult.javaFilesCount << "\n";
-    std::cout << std::setw(20) << "Logical lines:" << analyzerResult.linesOfCode << "\n";
-    std::cout << std::setw(20) << "Total lines:" << analyzerResult.totalLinesOfCode << "\n";
-    std::cout << std::setw(20) << "Classes found:" << analyzerResult.javaClassesCount << "\n";
-    std::cout << std::setw(20) << "Methods found:" << analyzerResult.javaMethodsCount << "\n";
+    std::cout << std::setw(26) << "Java files:" << analyzerResult.javaFilesCount << "\n";
+    std::cout << std::setw(26) << "Lines of code:" << analyzerResult.linesOfCode << "\n";
+    std::cout << std::setw(26) << "Total lines of code:" << analyzerResult.totalLinesOfCode << "\n";
+    std::cout << std::setw(26) << "Classes:" << analyzerResult.javaClassesCount << "\n";
+    std::cout << std::setw(26) << "Methods:" << analyzerResult.javaMethodsCount << "\n";
 
-    return 0;
+    if (!analyzerConfig.search.empty())
+    {
+        std::cout << std::endl;
+
+        std::cout << "Found " << analyzerResult.searches.size() << " matches from search (" << analyzerConfig.search
+                  << "):" << std::endl;
+
+        for (size_t i = 0; i < analyzerResult.searches.size(); i++)
+        {
+            std::cout << i + 1 << ". " << analyzerResult.searches[i].filename << ":"
+                      << analyzerResult.searches[i].lineNumber << std::endl;
+        }
+    }
+
+    return EXIT_SUCCESS;
 }

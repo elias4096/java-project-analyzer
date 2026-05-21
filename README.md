@@ -6,7 +6,7 @@ Multithreaded C++ CLI tool for analyzing Java projects, built for learning purpo
 
 - Efficient multithreaded file processing
 - Get number of lines-of-code, classes and methods
-- Project-wide word search (TODO)
+- Project-wide word search
 
 # Getting Started
 

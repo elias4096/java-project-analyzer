@@ -15,58 +15,7 @@ Analyzer::Analyzer(const AnalyzerConfig &config)
 
 AnalyzerResult Analyzer::analyze()
 {
-    return processJavaFiles([](std::ifstream &file) {
-        AnalyzerResult result = {};
-        result.javaFilesCount++;
-
-        std::string line = {};
-        bool inBlockComment = false;
-
-        while (std::getline(file, line))
-        {
-            result.totalLinesOfCode++;
-
-            line.erase(0, line.find_first_not_of(" \t\r\n"));
-
-            if (line.empty())
-                continue;
-
-            // handle block comments
-            if (inBlockComment)
-            {
-                if (line.find("*/") != std::string::npos)
-                    inBlockComment = false;
-
-                continue;
-            }
-
-            if (line.rfind("/*", 0) == 0)
-            {
-                inBlockComment = true;
-                continue;
-            }
-
-            // single line comment
-            if (line.rfind("//", 0) == 0)
-                continue;
-
-            result.linesOfCode++;
-
-            if (line.find("class ") != std::string::npos)
-                result.javaClassesCount++;
-
-            if (line.find("(") != std::string::npos && line.find(")") != std::string::npos &&
-                line.find("{") != std::string::npos)
-                result.javaMethodsCount++;
-        }
-
-        return result;
-    });
-}
-
-template <typename Function> AnalyzerResult Analyzer::processJavaFiles(Function fn)
-{
-    AnalyzerResult result = {};
+    AnalyzerResult result{};
     std::mutex resultMutex;
 
     {
@@ -80,7 +29,7 @@ template <typename Function> AnalyzerResult Analyzer::processJavaFiles(Function 
             if (entry.path().extension() != ".java")
                 continue;
 
-            pool.enqueue([path = entry.path(), &result, &resultMutex, fn] {
+            pool.enqueue([this, path = entry.path(), &result, &resultMutex] {
                 std::ifstream file(path);
                 if (!file)
                 {
@@ -88,11 +37,71 @@ template <typename Function> AnalyzerResult Analyzer::processJavaFiles(Function 
                     return;
                 }
 
-                AnalyzerResult local = fn(file);
+                AnalyzerResult local = this->processJavaFile(path);
                 std::lock_guard<std::mutex> lock(resultMutex);
                 result += local;
             });
         }
+    }
+
+    return result;
+}
+
+AnalyzerResult Analyzer::processJavaFile(std::filesystem::path filepath)
+{
+    AnalyzerResult result = {};
+    result.javaFilesCount = 1;
+
+    std::string line;
+    bool inBlockComment = false;
+
+    std::ifstream file(filepath);
+    if (!file)
+        return {};
+
+    while (std::getline(file, line))
+    {
+        result.totalLinesOfCode++;
+
+        line.erase(0, line.find_first_not_of(" \t\r\n"));
+        if (line.empty())
+            continue;
+
+        if (inBlockComment)
+        {
+            if (line.find("*/") != std::string::npos)
+                inBlockComment = false;
+            continue;
+        }
+
+        if (line.rfind("/*", 0) == 0)
+        {
+            inBlockComment = true;
+            continue;
+        }
+
+        if (line.rfind("//", 0) == 0)
+            continue;
+
+        result.linesOfCode++;
+
+        if (!m_Config.search.empty())
+        {
+            if (line.find(m_Config.search) != std::string::npos)
+            {
+                SearchResult searchResult = {};
+                searchResult.filename = filepath.filename().string();
+                searchResult.lineNumber = result.totalLinesOfCode;
+                result.searches.emplace_back(searchResult);
+            }
+        }
+
+        if (line.find("class ") != std::string::npos)
+            result.javaClassesCount++;
+
+        if (line.find("(") != std::string::npos && line.find(")") != std::string::npos &&
+            line.find("{") != std::string::npos)
+            result.javaMethodsCount++;
     }
 
     return result;
