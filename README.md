@@ -28,8 +28,21 @@ cmake -G "MinGW Makefiles" ..
 mingw32-make
 
 # Run app
-JavaProjectAnalyzer.exe
+analyzer.exe
 
 # Run tests
 Tests.exe
+```
+
+## Usage
+
+```
+# Uses current working directory
+analyzer.exe
+
+# Specify directory using the --path argument
+analyzer.exe --path [java-project-path]
+
+# Search through all project files using the --search argument
+analyzer.exe --path [java-project-path] --search [search-term]
 ```
