@@ -15,21 +15,24 @@ Analyzer::Analyzer(const AnalyzerConfig &config)
 
 AnalyzerResult Analyzer::analyze()
 {
-    AnalyzerResult result{};
     std::mutex resultMutex;
+    AnalyzerResult result = {};
 
     {
-        ThreadPool pool(m_Config.threadCount);
+        ThreadPool threadPool(m_Config.threadCount);
 
+        // Recursively goes through all files
         for (const auto &entry : std::filesystem::recursive_directory_iterator(m_Config.projectPath))
         {
+            // Ensure its a file
             if (!entry.is_regular_file())
                 continue;
 
+            // Ensure its a java file
             if (entry.path().extension() != ".java")
                 continue;
 
-            pool.enqueue([this, path = entry.path(), &result, &resultMutex] {
+            threadPool.enqueue([this, path = entry.path(), &result, &resultMutex] {
                 std::ifstream file(path);
                 if (!file)
                 {
@@ -52,7 +55,7 @@ AnalyzerResult Analyzer::processJavaFile(std::filesystem::path filepath)
     AnalyzerResult result = {};
     result.javaFilesCount = 1;
 
-    std::string line;
+    std::string line = {};
     bool inBlockComment = false;
 
     std::ifstream file(filepath);
@@ -64,6 +67,7 @@ AnalyzerResult Analyzer::processJavaFile(std::filesystem::path filepath)
         result.totalLinesOfCode++;
 
         line.erase(0, line.find_first_not_of(" \t\r\n"));
+
         if (line.empty())
             continue;
 
@@ -71,6 +75,7 @@ AnalyzerResult Analyzer::processJavaFile(std::filesystem::path filepath)
         {
             if (line.find("*/") != std::string::npos)
                 inBlockComment = false;
+
             continue;
         }
 
@@ -92,7 +97,7 @@ AnalyzerResult Analyzer::processJavaFile(std::filesystem::path filepath)
                 SearchResult searchResult = {};
                 searchResult.filename = filepath.filename().string();
                 searchResult.lineNumber = result.totalLinesOfCode;
-                result.searches.emplace_back(searchResult);
+                result.searchResults.emplace_back(searchResult);
             }
         }
 

@@ -43,7 +43,7 @@ ThreadPool::~ThreadPool()
 
     m_Condition.notify_all();
 
-    for (std::thread &worker : m_Workers)
+    for (auto &worker : m_Workers)
         worker.join();
 }
 

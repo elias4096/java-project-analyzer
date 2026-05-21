@@ -25,7 +25,7 @@ struct AnalyzerResult
     uint32_t javaFilesCount = {};
     uint32_t javaClassesCount = {};
     uint32_t javaMethodsCount = {};
-    std::vector<SearchResult> searches = {};
+    std::vector<SearchResult> searchResults = {};
 
     AnalyzerResult &operator+=(const AnalyzerResult &other)
     {
@@ -34,7 +34,7 @@ struct AnalyzerResult
         javaFilesCount += other.javaFilesCount;
         javaClassesCount += other.javaClassesCount;
         javaMethodsCount += other.javaMethodsCount;
-        searches.insert(searches.end(), other.searches.begin(), other.searches.end());
+        searchResults.insert(searchResults.end(), other.searchResults.begin(), other.searchResults.end());
         return *this;
     }
 };

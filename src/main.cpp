@@ -49,13 +49,13 @@ int main(int argc, char *argv[])
     {
         std::cout << std::endl;
 
-        std::cout << "Found " << analyzerResult.searches.size() << " matches from search (" << analyzerConfig.search
-                  << "):" << std::endl;
+        std::cout << "Found " << analyzerResult.searchResults.size() << " matches from search ("
+                  << analyzerConfig.search << "):" << std::endl;
 
-        for (size_t i = 0; i < analyzerResult.searches.size(); i++)
+        for (size_t i = 0; i < analyzerResult.searchResults.size(); i++)
         {
-            std::cout << i + 1 << ". " << analyzerResult.searches[i].filename << ":"
-                      << analyzerResult.searches[i].lineNumber << std::endl;
+            std::cout << i + 1 << ". " << analyzerResult.searchResults[i].filename << ":"
+                      << analyzerResult.searchResults[i].lineNumber << std::endl;
         }
     }
 
